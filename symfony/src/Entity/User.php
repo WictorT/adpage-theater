@@ -1,22 +1,18 @@
 <?php
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\PersistentCollection;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @ORM\Table(name="rpg_users")
+ * @ORM\Table(name="users")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity("email")
  * @UniqueEntity("username")
  */
 class User extends BaseEntity implements UserInterface
 {
-    public const TOTAL_CART_PRICE_KEY_PREFIX = 'total_cart_price_for_user_';
-
     /**
      * @ORM\Column(type="string", length=25, unique=true)
      *
@@ -37,18 +33,6 @@ class User extends BaseEntity implements UserInterface
      * @var string
      */
     private $email;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\CartItem", mappedBy="user", cascade={"persist", "remove"})
-     *
-     * @var CartItem[]|ArrayCollection
-     */
-    private $cartItems;
-
-    public function __construct()
-    {
-        $this->cartItems = new ArrayCollection();
-    }
 
     /**
      * @return string
@@ -113,25 +97,6 @@ class User extends BaseEntity implements UserInterface
     public function getPassword(): string
     {
         return $this->password;
-    }
-
-    /**
-     * @return CartItem[]|ArrayCollection|PersistentCollection
-     */
-    public function getCartItems()
-    {
-        return $this->cartItems;
-    }
-
-    /**
-     * @param CartItem[]|ArrayCollection $cartItems
-     *
-     * @return User
-     */
-    public function setCartItems($cartItems): User
-    {
-        $this->cartItems = $cartItems;
-        return $this;
     }
 
     /**

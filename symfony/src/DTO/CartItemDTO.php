@@ -26,7 +26,7 @@ class CartItemDTO extends BaseDTO
     public $count;
 
     /**
-     * @var ProductDTO
+     * @var MovieDTO
      */
     public $product;
 }

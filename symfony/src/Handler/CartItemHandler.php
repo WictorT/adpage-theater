@@ -3,7 +3,7 @@ namespace App\Handler;
 
 use App\DTO\CartItemDTO;
 use App\Entity\CartItem;
-use App\Entity\Product;
+use App\Entity\Movie;
 use App\Entity\User;
 use App\Transformer\CartItemTransformer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,7 +23,7 @@ class CartItemHandler extends BaseHandler
     private $transformer;
 
     /**
-     * @var ProductHandler
+     * @var MovieHandler
      */
     private $productHandler;
 
@@ -35,13 +35,13 @@ class CartItemHandler extends BaseHandler
     /**
      * @param EntityManagerInterface $entityManager
      * @param CartItemTransformer $transformer
-     * @param ProductHandler $productHandler
+     * @param MovieHandler $productHandler
      * @param Client $cache
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         CartItemTransformer $transformer,
-        ProductHandler $productHandler,
+        MovieHandler $productHandler,
         Client $cache
     ) {
         $this->entityManager = $entityManager;
@@ -142,11 +142,11 @@ class CartItemHandler extends BaseHandler
 
     /**
      * @param CartItem[] $cartItems
-     * @param Product $product
+     * @param Movie $product
      *
      * @return CartItem|null
      */
-    private function getCardItemByProduct($cartItems, Product $product): ?CartItem
+    private function getCardItemByProduct($cartItems, Movie $product): ?CartItem
     {
         foreach ($cartItems as $cartItem) {
             if ($cartItem->getProduct() === $product) {
@@ -199,14 +199,14 @@ class CartItemHandler extends BaseHandler
     }
 
     /**
-     * @param Product $product
+     * @param Movie $product
      * @param User $user
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-     *
      * @return CartItem|null
+     *@throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     *
      */
-    private function createNewCartItem(Product $product, User $user): ?CartItem
+    private function createNewCartItem(Movie $product, User $user): ?CartItem
     {
         $cartItems = $user->getCartItems();
 

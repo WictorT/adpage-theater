@@ -2,11 +2,13 @@
 namespace App\Handler;
 
 use App\DTO\BaseDTO;
-use App\DTO\ProductDTO;
+use App\DTO\MovieDTO;
 use App\Entity\BaseEntity;
-use App\Entity\Product;
-use App\Repository\ProductRepository;
-use App\Transformer\ProductTransformer;
+use App\Entity\Movie;
+use App\Repository\MovieRepository;
+use App\Transformer\MovieTransformer;
+use DateInterval;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
@@ -17,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class ProductHandler extends BaseHandler
+class MovieHandler extends BaseHandler
 {
     /**
      * @var EntityManagerInterface
@@ -25,7 +27,7 @@ class ProductHandler extends BaseHandler
     private $entityManager;
 
     /**
-     * @var ProductTransformer
+     * @var MovieTransformer
      */
     private $transformer;
 
@@ -41,13 +43,13 @@ class ProductHandler extends BaseHandler
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param ProductTransformer $transformer
+     * @param MovieTransformer $transformer
      * @param UrlGeneratorInterface $router
      * @param ValidatorInterface $validator
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        ProductTransformer $transformer,
+        MovieTransformer $transformer,
         UrlGeneratorInterface $router,
         ValidatorInterface $validator
     ) {
@@ -60,13 +62,13 @@ class ProductHandler extends BaseHandler
     /**
      * @param int $productId
      *
-     * @throws NotFoundHttpException
+     * @return Movie|null
+     *@throws NotFoundHttpException
      *
-     * @return Product|null
      */
-    public function getById(int $productId): ?Product
+    public function getById(int $productId): ?Movie
     {
-        /** @var Product $product */
+        /** @var Movie $product */
         $product = $this->getRepository()->find($productId);
         if ($product === null) {
             throw new NotFoundHttpException();
@@ -76,9 +78,9 @@ class ProductHandler extends BaseHandler
     }
 
     /**
-     * @param BaseEntity|Product $product
+     * @param BaseEntity|Movie $product
      *
-     * @return BaseDTO|ProductDTO
+     * @return BaseDTO|MovieDTO
      */
     public function getDto(BaseEntity $product): BaseDTO
     {
@@ -89,13 +91,27 @@ class ProductHandler extends BaseHandler
      * @param int $page
      * @param int $perPage
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-     *
+     * @param int $weekNumber
+     * @param string|null $q
      * @return array
      */
-    public function getPaginated(int $page, int $perPage): array
+    public function getPaginated(int $page, int $perPage, int $weekNumber, ?string $q): array
     {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('p');
+        $queryBuilder = $this->getRepository()
+            ->createQueryBuilder('p')
+            ->andWhere('p.showtimeFrom BETWEEN :from AND :to')
+            ->setParameter('from', (new DateTime)->add(new DateInterval("P{$weekNumber}W")))
+            ->setParameter('to', (new DateTime)->modify('Monday next week')->add(new DateInterval("P{$weekNumber}W")));
+
+        if ($q) {
+            $queryBuilder = $queryBuilder->andWhere(
+                $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->eq('lower(p.name)', ':q'),
+                    $queryBuilder->expr()->eq('lower(p.genre)', ':q')
+                ))
+                ->setParameter('q', strtolower($q));
+        }
+
         $adapter = new DoctrineORMAdapter($queryBuilder);
 
         $paginator = new Pagerfanta($adapter);
@@ -120,7 +136,7 @@ class ProductHandler extends BaseHandler
     }
 
     /**
-     * @param BaseDTO|ProductDTO $productDto
+     * @param BaseDTO|MovieDTO $productDto
      *
      * @return BaseDTO
      */
@@ -159,7 +175,7 @@ class ProductHandler extends BaseHandler
     }
 
     /**
-     * @param BaseEntity|Product $product
+     * @param BaseEntity|Movie $product
      *
      * @return void
      */
@@ -170,11 +186,11 @@ class ProductHandler extends BaseHandler
     }
 
     /**
-     * @return ProductRepository
+     * @return MovieRepository
      */
     private function getRepository(): EntityRepository
     {
-        return $this->entityManager->getRepository(Product::class);
+        return $this->entityManager->getRepository(Movie::class);
     }
 
     /**
@@ -186,7 +202,7 @@ class ProductHandler extends BaseHandler
         $links = [];
 
         $links['self'] = $this->router->generate(
-            'app.products.list',
+            'app.movies.list',
             [
                 'page' => $paginator->getCurrentPage(),
                 'per_page' => $paginator->getMaxPerPage()
@@ -194,7 +210,7 @@ class ProductHandler extends BaseHandler
         );
 
         $links['first'] = $this->router->generate(
-            'app.products.list',
+            'app.movies.list',
             [
                 'page' => 1,
                 'per_page' => $paginator->getMaxPerPage()
@@ -202,7 +218,7 @@ class ProductHandler extends BaseHandler
         );
 
         $links['last'] = $this->router->generate(
-            'app.products.list',
+            'app.movies.list',
             [
                 'page' => $paginator->getNbPages(),
                 'per_page' => $paginator->getMaxPerPage()
@@ -210,7 +226,7 @@ class ProductHandler extends BaseHandler
         );
 
         $paginator->hasPreviousPage() && $links['previous'] = $this->router->generate(
-            'app.products.list',
+            'app.movies.list',
             [
                 'page' => $paginator->getCurrentPage() - 1,
                 'per_page' => $paginator->getMaxPerPage()
@@ -218,7 +234,7 @@ class ProductHandler extends BaseHandler
         );
 
         $paginator->hasNextPage() && $links['next'] = $this->router->generate(
-            'app.products.list',
+            'app.movies.list',
             [
                 'page' => $paginator->getCurrentPage() + 1,
                 'per_page' => $paginator->getMaxPerPage()

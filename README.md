@@ -9,10 +9,10 @@
  - [**Docker**](https://docs.docker.com/engine/installation/)
 
 ### Set up (for linux systems)
-1. Clone this repository using: `git clone https://github.com/WictorT/randomly-priced-games.git`
-2. `cd randomly-priced-games`
-3. Run `docker-compose build --no-cache` to build images.
-4. Copy `.env.dist` into `.env` and configure as you are wiling(better keep default values).
+1. Clone this repository using: `git clone https://github.com/WictorT/adpage-theater.git`
+2. `cd adpage-theater`
+3. Copy `.env.dist` into `.env` and configure as you are wiling(better keep default values).
+4. Run `docker-compose build --no-cache` to build images.
 5. Run `docker-compose up` to bring up your containers.
 6. Hope containers are up. If yes then run `docker-compose exec php bash` to enter container. Note: Next commands need to be run inside the container
 7.

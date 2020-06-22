@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     zlib1g-dev \
     procps \
-    acl
+    acl \
+    sqlite3
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -23,7 +24,7 @@ RUN printf '[PHP]\ndate.timezone = "%s"\n', ${TIMEZONE} > /usr/local/etc/php/con
 RUN "date"
 
 # Type docker-php-ext-install to see available extensions
-RUN docker-php-ext-install pdo pdo_mysql zip
+RUN docker-php-ext-install pdo zip
 
 
 # install xdebug

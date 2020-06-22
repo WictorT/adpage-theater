@@ -2,15 +2,15 @@
 
 namespace App\Tests\Controller;
 
-use App\Entity\Product;
+use App\Entity\Movie;
 use App\Tests\ApiTestCase;
-use App\Tests\Helper\ProductHelper;
+use App\Tests\Helper\MovieHelper;
 use Symfony\Component\HttpFoundation\Response;
 
-class ProductControllerTest extends ApiTestCase
+class MovieControllerTest extends ApiTestCase
 {
     /**
-     * @var ProductHelper $productHelper
+     * @var MovieHelper $productHelper
      */
     private $productHelper;
 
@@ -18,7 +18,7 @@ class ProductControllerTest extends ApiTestCase
     {
         parent::setUp();
 
-        $this->productHelper = new ProductHelper($this->entityManager);
+        $this->productHelper = new MovieHelper($this->entityManager);
     }
 
     public function testIndexActionSucceeds(): void
@@ -32,7 +32,7 @@ class ProductControllerTest extends ApiTestCase
         $this->productHelper->createProduct("The Witcher: Battle Arena");
         $this->productHelper->createProduct("The Witcher: Rise of the White Wolf");
 
-        $response = $this->performRequest('GET', 'app.products.list', ['page' => 2], [], false);
+        $response = $this->performRequest('GET', 'app.movies.list', ['page' => 2], [], false);
         $responseContent = json_decode($response->getContent());
 
         $this->assertEquals(
@@ -40,16 +40,16 @@ class ProductControllerTest extends ApiTestCase
                 'status_code' => Response::HTTP_OK,
                 'content' => [
                     'page' => 2,
-                    'per_page' => ProductHelper::DEFAULT_PER_PAGE,
+                    'per_page' => MovieHelper::DEFAULT_PER_PAGE,
                     'page_count' => 3,
                     'total_pages' => 3,
                     'total_count' => 7,
                     'links' => [
-                        'self' => $this->router->generate('app.products.list', ['page' => 2, 'per_page' => 3]),
-                        'first' => $this->router->generate('app.products.list', ['page' => 1, 'per_page' => 3]),
-                        'last' => $this->router->generate('app.products.list', ['page' => 3, 'per_page' => 3]),
-                        'next' => $this->router->generate('app.products.list', ['page' => 3, 'per_page' => 3]),
-                        'previous' => $this->router->generate('app.products.list', ['page' => 1, 'per_page' => 3]),
+                        'self' => $this->router->generate('app.movies.list', ['page' => 2, 'per_page' => 3]),
+                        'first' => $this->router->generate('app.movies.list', ['page' => 1, 'per_page' => 3]),
+                        'last' => $this->router->generate('app.movies.list', ['page' => 3, 'per_page' => 3]),
+                        'next' => $this->router->generate('app.movies.list', ['page' => 3, 'per_page' => 3]),
+                        'previous' => $this->router->generate('app.movies.list', ['page' => 1, 'per_page' => 3]),
                     ],
                     'data_count' => 3,
                 ]
@@ -81,7 +81,7 @@ class ProductControllerTest extends ApiTestCase
      */
     public function testIndexActionFails($data): void
     {
-        $response = $this->performRequest('GET', 'app.products.list', $data, [], false);
+        $response = $this->performRequest('GET', 'app.movies.list', $data, [], false);
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
@@ -133,7 +133,6 @@ class ProductControllerTest extends ApiTestCase
                 'content' => [
                     'id' => $product->getId(),
                     'name' => $product->getName(),
-                    'price' => $product->getPrice(),
                     'created_at' => 'exists',
                     'updated_at' => 'exists',
                 ]
@@ -143,7 +142,6 @@ class ProductControllerTest extends ApiTestCase
                 'content' => [
                     'id' => $responseContent->id,
                     'name' => $responseContent->name,
-                    'price' => $responseContent->price,
                     'created_at' => $responseContent->created_at ? 'exists' : 'is missing',
                     'updated_at' => $responseContent->updated_at ? 'exists' : 'is missing',
                 ]
@@ -169,13 +167,13 @@ class ProductControllerTest extends ApiTestCase
             'app.products.create',
             [],
             [
-                'name' => ProductHelper::TEST_PRODUCT_NAME,
-                'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                'name' => MovieHelper::TEST_PRODUCT_NAME,
+                'price' => MovieHelper::TEST_PRODUCT_PRICE,
             ]
         );
         $responseContent = json_decode($response->getContent());
-        $product = $this->entityManager->getRepository(Product::class)->findOneBy([
-            'name' => ProductHelper::TEST_PRODUCT_NAME
+        $product = $this->entityManager->getRepository(Movie::class)->findOneBy([
+            'name' => MovieHelper::TEST_PRODUCT_NAME
         ]);
 
         $this->assertEquals(
@@ -183,8 +181,8 @@ class ProductControllerTest extends ApiTestCase
                 'status_code' => Response::HTTP_CREATED,
                 'content' => [
                     'id' => $product->getId(),
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                     'created_at' => $product->getCreatedAt()->format(\DateTime::ATOM),
                     'updated_at' => $product->getUpdatedAt()->format(\DateTime::ATOM),
                 ]
@@ -224,36 +222,36 @@ class ProductControllerTest extends ApiTestCase
             ],
             'case 2: no name' => [
                 'data' => [
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                 ],
             ],
             'case 3: no price' => [
                 'data' => [
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
                 ],
             ],
             'case 4: negative price' => [
                 'data' => [
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
-                    'price' => - ProductHelper::TEST_PRODUCT_PRICE,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'price' => - MovieHelper::TEST_PRODUCT_PRICE,
                 ]
             ],
             'case 5: duplication' => [
                 'data' => [
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                 ]
             ],
             'case 6: too long name' => [
                 'data' => [
                     'name' => str_repeat('n', 255),
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                 ]
             ],
             'case 7: invalid price type' => [
                 'data' => [
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
-                    'price' => ProductHelper::TEST_PRODUCT_NAME,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'price' => MovieHelper::TEST_PRODUCT_NAME,
                 ]
             ],
         ];
@@ -279,8 +277,8 @@ class ProductControllerTest extends ApiTestCase
                 'id' => $product->getId()
             ],
             [
-                'name' => ProductHelper::TEST_PRODUCT_NAME,
-                'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                'name' => MovieHelper::TEST_PRODUCT_NAME,
+                'price' => MovieHelper::TEST_PRODUCT_PRICE,
             ]
         );
 
@@ -291,8 +289,8 @@ class ProductControllerTest extends ApiTestCase
                 'status_code' => Response::HTTP_OK,
                 'content' => [
                     'id' => $product->getId(),
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                     'created_at' => 'exists',
                     'updated_at' => 'exists',
                 ]
@@ -321,8 +319,8 @@ class ProductControllerTest extends ApiTestCase
                 'id' => 2077
             ],
             [
-                'name' => ProductHelper::TEST_PRODUCT_NAME,
-                'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                'name' => MovieHelper::TEST_PRODUCT_NAME,
+                'price' => MovieHelper::TEST_PRODUCT_PRICE,
             ]
         );
 
@@ -353,30 +351,30 @@ class ProductControllerTest extends ApiTestCase
             ],
             'case 2: no name' => [
                 'data' => [
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                 ],
             ],
             'case 3: no price' => [
                 'data' => [
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
                 ],
             ],
             'case 4: negative price' => [
                 'data' => [
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
-                    'price' => - ProductHelper::TEST_PRODUCT_PRICE,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'price' => - MovieHelper::TEST_PRODUCT_PRICE,
                 ]
             ],
             'case 5: duplication' => [
                 'data' => [
-                    'name' => ProductHelper::TEST_PRODUCT_NAME,
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                 ]
             ],
             'case 6: too long name' => [
                 'data' => [
                     'name' => str_repeat('n', 256),
-                    'price' => ProductHelper::TEST_PRODUCT_PRICE,
+                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
                 ]
             ],
         ];
@@ -402,7 +400,7 @@ class ProductControllerTest extends ApiTestCase
             ],
             [
                 'status_code' => $response->getStatusCode(),
-                'removed' => !(bool)$this->entityManager->find(Product::class, 2077)
+                'removed' => !(bool)$this->entityManager->find(Movie::class, 2077)
             ]
         );
     }

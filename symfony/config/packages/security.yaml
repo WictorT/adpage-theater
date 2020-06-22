@@ -15,7 +15,7 @@ security:
             security: false
 
         products-view:
-            pattern:  ^/api/products
+            pattern:  ^/api/movies
             security: false
             methods: ["GET"]
 
