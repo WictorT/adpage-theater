@@ -5,32 +5,34 @@ namespace App\Tests\Controller;
 use App\Entity\Movie;
 use App\Tests\ApiTestCase;
 use App\Tests\Helper\MovieHelper;
+use DateInterval;
+use DateTime;
 use Symfony\Component\HttpFoundation\Response;
 
 class MovieControllerTest extends ApiTestCase
 {
     /**
-     * @var MovieHelper $productHelper
+     * @var MovieHelper $movieHelper
      */
-    private $productHelper;
+    private $movieHelper;
 
     protected function setUp()
     {
         parent::setUp();
 
-        $this->productHelper = new MovieHelper($this->entityManager);
+        $this->movieHelper = new MovieHelper($this->entityManager);
     }
 
     public function testIndexActionSucceeds(): void
     {
-        $this->productHelper->removeAllProducts();
-        $this->productHelper->createProduct("The Witcher 3: Wild Hunt");
-        $this->productHelper->createProduct("The Witcher 2: Assassins of Kings");
-        $this->productHelper->createProduct("The Witcher");
-        $this->productHelper->createProduct("Witcher Arena");
-        $this->productHelper->createProduct("Gwent: The Witcher Card Game");
-        $this->productHelper->createProduct("The Witcher: Battle Arena");
-        $this->productHelper->createProduct("The Witcher: Rise of the White Wolf");
+        $this->movieHelper->removeAllMovies();
+        $this->movieHelper->createMovie("The Witcher 3: Wild Hunt");
+        $this->movieHelper->createMovie("The Witcher 2: Assassins of Kings");
+        $this->movieHelper->createMovie("The Witcher");
+        $this->movieHelper->createMovie("Witcher Arena");
+        $this->movieHelper->createMovie("Gwent: The Witcher Card Game");
+        $this->movieHelper->createMovie("The Witcher: Battle Arena");
+        $this->movieHelper->createMovie("The Witcher: Rise of the White Wolf");
 
         $response = $this->performRequest('GET', 'app.movies.list', ['page' => 2], [], false);
         $responseContent = json_decode($response->getContent());
@@ -122,17 +124,18 @@ class MovieControllerTest extends ApiTestCase
 
     public function testGetActionSuccess(): void
     {
-        $product = $this->productHelper->createProduct();
+        $movie = $this->movieHelper->createMovie();
 
-        $response = $this->performRequest('GET', 'app.products.get', ['id' => $product->getId()], [], false);
+        $response = $this->performRequest('GET', 'app.movies.get', ['id' => $movie->getId()], [], false);
         $responseContent = json_decode($response->getContent());
 
         $this->assertEquals(
             [
                 'status_code' => Response::HTTP_OK,
                 'content' => [
-                    'id' => $product->getId(),
-                    'name' => $product->getName(),
+                    'id' => $movie->getId(),
+                    'name' => $movie->getName(),
+                    'genre' => $movie->getGenre(),
                     'created_at' => 'exists',
                     'updated_at' => 'exists',
                 ]
@@ -142,6 +145,7 @@ class MovieControllerTest extends ApiTestCase
                 'content' => [
                     'id' => $responseContent->id,
                     'name' => $responseContent->name,
+                    'genre' => $responseContent->genre,
                     'created_at' => $responseContent->created_at ? 'exists' : 'is missing',
                     'updated_at' => $responseContent->updated_at ? 'exists' : 'is missing',
                 ]
@@ -151,40 +155,43 @@ class MovieControllerTest extends ApiTestCase
 
     public function testGetActionReturnsNotFound(): void
     {
-        $this->productHelper->removeProduct(['id' => 2077]);
+        $this->movieHelper->removeMovie(['id' => 2077]);
 
-        $response = $this->performRequest('GET', 'app.products.get', ['id' => 2077], [], false);
+        $response = $this->performRequest('GET', 'app.movies.get', ['id' => 2077], [], false);
 
         $this->assertEquals(Response::HTTP_NOT_FOUND, $response->getStatusCode());
     }
 
     public function testCreateActionSucceeds(): void
     {
-        $this->productHelper->removeProduct();
+        $this->movieHelper->removeMovie();
 
         $response = $this->performRequest(
             'POST',
-            'app.products.create',
+            'app.movies.create',
             [],
             [
-                'name' => MovieHelper::TEST_PRODUCT_NAME,
-                'price' => MovieHelper::TEST_PRODUCT_PRICE,
+                'name' => MovieHelper::TEST_MOVIE_NAME,
+                'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                'showtime_from' => (new DateTime())->format('Y-m-d H:i:s'),
+                'showtime_to' => (new DateTime())->add(new DateInterval('PT2H'))->format('Y-m-d H:i:s'),
             ]
         );
+
         $responseContent = json_decode($response->getContent());
-        $product = $this->entityManager->getRepository(Movie::class)->findOneBy([
-            'name' => MovieHelper::TEST_PRODUCT_NAME
+        $movie = $this->entityManager->getRepository(Movie::class)->findOneBy([
+            'name' => MovieHelper::TEST_MOVIE_NAME
         ]);
 
         $this->assertEquals(
             [
                 'status_code' => Response::HTTP_CREATED,
                 'content' => [
-                    'id' => $product->getId(),
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
-                    'created_at' => $product->getCreatedAt()->format(\DateTime::ATOM),
-                    'updated_at' => $product->getUpdatedAt()->format(\DateTime::ATOM),
+                    'id' => $movie->getId(),
+                    'name' => MovieHelper::TEST_MOVIE_NAME,
+                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                    'created_at' => $movie->getCreatedAt()->format(\DateTime::ATOM),
+                    'updated_at' => $movie->getUpdatedAt()->format(\DateTime::ATOM),
                 ]
             ],
             [
@@ -192,7 +199,7 @@ class MovieControllerTest extends ApiTestCase
                 'content' => [
                     'id' => $responseContent->id,
                     'name' => $responseContent->name,
-                    'price' => $responseContent->price,
+                    'genre' => $responseContent->genre,
                     'created_at' => $responseContent->created_at,
                     'updated_at' => $responseContent->updated_at,
                 ]
@@ -206,7 +213,7 @@ class MovieControllerTest extends ApiTestCase
      */
     public function testCreateActionReturnsBadRequest(array $data): void
     {
-        $response = $this->performRequest('POST', 'app.products.create', [], $data);
+        $response = $this->performRequest('POST', 'app.movies.create', [], $data);
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
@@ -222,36 +229,18 @@ class MovieControllerTest extends ApiTestCase
             ],
             'case 2: no name' => [
                 'data' => [
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
+                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
                 ],
             ],
-            'case 3: no price' => [
+            'case 3: no genre' => [
                 'data' => [
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'name' => MovieHelper::TEST_MOVIE_NAME,
                 ],
             ],
-            'case 4: negative price' => [
-                'data' => [
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
-                    'price' => - MovieHelper::TEST_PRODUCT_PRICE,
-                ]
-            ],
-            'case 5: duplication' => [
-                'data' => [
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
-                ]
-            ],
-            'case 6: too long name' => [
+            'case 4: too long name' => [
                 'data' => [
                     'name' => str_repeat('n', 255),
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
-                ]
-            ],
-            'case 7: invalid price type' => [
-                'data' => [
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
-                    'price' => MovieHelper::TEST_PRODUCT_NAME,
+                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
                 ]
             ],
         ];
@@ -259,26 +248,28 @@ class MovieControllerTest extends ApiTestCase
 
     public function testCreateActionReturnsUnauthorized(): void
     {
-        $response = $this->performRequest('POST', 'app.products.create', [], [], false);
+        $response = $this->performRequest('POST', 'app.movies.create', [], [], false);
 
         $this->assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
     }
 
     public function testUpdateActionSucceeds(): void
     {
-        $this->productHelper->removeProduct(['name' => 'faulty string']);
-        $this->productHelper->removeProduct();
-        $product = $this->productHelper->createProduct('faulty string', 5559.995);
+        $this->movieHelper->removeMovie(['name' => 'faulty string']);
+        $this->movieHelper->removeMovie();
+        $movie = $this->movieHelper->createMovie('faulty string', 'Drama');
 
         $response = $this->performRequest(
             'PUT',
-            'app.products.update',
+            'app.movies.update',
             [
-                'id' => $product->getId()
+                'id' => $movie->getId()
             ],
             [
-                'name' => MovieHelper::TEST_PRODUCT_NAME,
-                'price' => MovieHelper::TEST_PRODUCT_PRICE,
+                'name' => MovieHelper::TEST_MOVIE_NAME,
+                'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                'showtime_from' => (new DateTime())->format('Y-m-d H:i:s'),
+                'showtime_to' => (new DateTime())->add(new DateInterval('PT2H'))->format('Y-m-d H:i:s'),
             ]
         );
 
@@ -288,9 +279,9 @@ class MovieControllerTest extends ApiTestCase
             [
                 'status_code' => Response::HTTP_OK,
                 'content' => [
-                    'id' => $product->getId(),
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
+                    'id' => $movie->getId(),
+                    'name' => MovieHelper::TEST_MOVIE_NAME,
+                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
                     'created_at' => 'exists',
                     'updated_at' => 'exists',
                 ]
@@ -300,7 +291,7 @@ class MovieControllerTest extends ApiTestCase
                 'content' => [
                     'id' => $responseContent->id,
                     'name' => $responseContent->name,
-                    'price' => $responseContent->price,
+                    'genre' => $responseContent->genre,
                     'created_at' => $responseContent->created_at ? 'exists' : 'is missing',
                     'updated_at' => $responseContent->updated_at ? 'exists' : 'is missing',
                 ]
@@ -310,17 +301,17 @@ class MovieControllerTest extends ApiTestCase
 
     public function testUpdateActionReturnsNotFound(): void
     {
-        $this->productHelper->removeProduct(['id' => 2077]);
+        $this->movieHelper->removeMovie(['id' => 2077]);
 
         $response = $this->performRequest(
             'PUT',
-            'app.products.update',
+            'app.movies.update',
             [
                 'id' => 2077
             ],
             [
-                'name' => MovieHelper::TEST_PRODUCT_NAME,
-                'price' => MovieHelper::TEST_PRODUCT_PRICE,
+                'name' => MovieHelper::TEST_MOVIE_NAME,
+                'genre' => MovieHelper::TEST_PRODUCT_GENRE,
             ]
         );
 
@@ -333,9 +324,9 @@ class MovieControllerTest extends ApiTestCase
      */
     public function testUpdateActionReturnsBadRequest(array $data): void
     {
-        $product = $this->productHelper->createProduct('faulty name', '99999');
+        $movie = $this->movieHelper->createMovie('faulty name', '99999');
 
-        $response = $this->performRequest('PUT', 'app.products.update', ['id' => $product->getId()], $data);
+        $response = $this->performRequest('PUT', 'app.movies.update', ['id' => $movie->getId()], $data);
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
@@ -351,30 +342,18 @@ class MovieControllerTest extends ApiTestCase
             ],
             'case 2: no name' => [
                 'data' => [
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
+                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
                 ],
             ],
-            'case 3: no price' => [
+            'case 3: no genre' => [
                 'data' => [
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
+                    'name' => MovieHelper::TEST_MOVIE_NAME,
                 ],
             ],
-            'case 4: negative price' => [
-                'data' => [
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
-                    'price' => - MovieHelper::TEST_PRODUCT_PRICE,
-                ]
-            ],
-            'case 5: duplication' => [
-                'data' => [
-                    'name' => MovieHelper::TEST_PRODUCT_NAME,
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
-                ]
-            ],
-            'case 6: too long name' => [
+            'case 4: too long name' => [
                 'data' => [
                     'name' => str_repeat('n', 256),
-                    'price' => MovieHelper::TEST_PRODUCT_PRICE,
+                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
                 ]
             ],
         ];
@@ -382,16 +361,16 @@ class MovieControllerTest extends ApiTestCase
 
     public function testUpdateActionReturnsUnauthorized(): void
     {
-        $response = $this->performRequest('PUT', 'app.products.update', ['id' => 2077], [], false);
+        $response = $this->performRequest('PUT', 'app.movies.update', ['id' => 2077], [], false);
 
         $this->assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
     }
 
     public function testDeleteActionSucceeds(): void
     {
-        $product = $this->productHelper->createProduct();
+        $movie = $this->movieHelper->createMovie();
 
-        $response =  $this->performRequest('DELETE', 'app.products.delete', ['id' => $product->getId()]);
+        $response =  $this->performRequest('DELETE', 'app.movies.delete', ['id' => $movie->getId()]);
 
         $this->assertEquals(
             [
@@ -407,16 +386,16 @@ class MovieControllerTest extends ApiTestCase
 
     public function testDeleteActionReturnsNotFound(): void
     {
-        $this->productHelper->removeProduct(['id' => 2077]);
+        $this->movieHelper->removeMovie(['id' => 2077]);
 
-        $response = $this->performRequest('DELETE', 'app.products.delete', ['id' => 2077]);
+        $response = $this->performRequest('DELETE', 'app.movies.delete', ['id' => 2077]);
 
         $this->assertEquals(Response::HTTP_NOT_FOUND, $response->getStatusCode());
     }
 
     public function testDeleteActionReturnsUnauthorized(): void
     {
-        $response = $this->performRequest('DELETE', 'app.products.delete', ['id' => 2077], [], false);
+        $response = $this->performRequest('DELETE', 'app.movies.delete', ['id' => 2077], [], false);
 
         $this->assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
     }

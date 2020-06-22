@@ -20,8 +20,8 @@
         <env name="JWT_SECRET_KEY" value="%kernel.project_dir%/config/jwt/private.pem"/>
         <env name="JWT_PUBLIC_KEY" value="%kernel.project_dir%/config/jwt/public.pem"/>
         <env name="JWT_PASSPHRASE" value="56042e589801e76353c1fab7c9220579"/>
-        <env name="DATABASE_URL" value="mysql://root:root@db/rpg_test" />
-        <env name="TEST_DATABASE_URL" value="mysql://root:root@db/rpg_test" />
+        <env name="DATABASE_URL" value="sqlite:///%kernel.project_dir%/var/app.db" />
+        <env name="TEST_DATABASE_URL" value="sqlite:///%kernel.project_dir%/var/test.db" />
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak" />
         <!-- ###- lexik/jwt-authentication-bundle ### -->
 
