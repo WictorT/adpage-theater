@@ -34,12 +34,12 @@ class MovieFixtures extends Fixture
 
     public function load(ObjectManager $manager)
     {
-        foreach (self::MOVIES as $key => $product) {
+        foreach (self::MOVIES as $key => $movie) {
             $showtimeInDays = $key * 3;
 
             $user = (new Movie)
-                ->setName($product['name'])
-                ->setGenre($product['genre'])
+                ->setName($movie['name'])
+                ->setGenre($movie['genre'])
                 ->setShowtimeFrom((new DateTime)->add(new DateInterval("P{$showtimeInDays}D")))
                 ->setShowtimeTo((new DateTime)->add(new DateInterval("P{$showtimeInDays}DT2H")));
 

@@ -172,7 +172,7 @@ class MovieControllerTest extends ApiTestCase
             [],
             [
                 'name' => MovieHelper::TEST_MOVIE_NAME,
-                'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                'genre' => MovieHelper::TEST_MOVIE_GENRE,
                 'showtime_from' => (new DateTime())->format('Y-m-d H:i:s'),
                 'showtime_to' => (new DateTime())->add(new DateInterval('PT2H'))->format('Y-m-d H:i:s'),
             ]
@@ -189,7 +189,7 @@ class MovieControllerTest extends ApiTestCase
                 'content' => [
                     'id' => $movie->getId(),
                     'name' => MovieHelper::TEST_MOVIE_NAME,
-                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                    'genre' => MovieHelper::TEST_MOVIE_GENRE,
                     'created_at' => $movie->getCreatedAt()->format(\DateTime::ATOM),
                     'updated_at' => $movie->getUpdatedAt()->format(\DateTime::ATOM),
                 ]
@@ -229,7 +229,7 @@ class MovieControllerTest extends ApiTestCase
             ],
             'case 2: no name' => [
                 'data' => [
-                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                    'genre' => MovieHelper::TEST_MOVIE_GENRE,
                 ],
             ],
             'case 3: no genre' => [
@@ -240,7 +240,7 @@ class MovieControllerTest extends ApiTestCase
             'case 4: too long name' => [
                 'data' => [
                     'name' => str_repeat('n', 255),
-                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                    'genre' => MovieHelper::TEST_MOVIE_GENRE,
                 ]
             ],
         ];
@@ -267,7 +267,7 @@ class MovieControllerTest extends ApiTestCase
             ],
             [
                 'name' => MovieHelper::TEST_MOVIE_NAME,
-                'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                'genre' => MovieHelper::TEST_MOVIE_GENRE,
                 'showtime_from' => (new DateTime())->format('Y-m-d H:i:s'),
                 'showtime_to' => (new DateTime())->add(new DateInterval('PT2H'))->format('Y-m-d H:i:s'),
             ]
@@ -281,7 +281,7 @@ class MovieControllerTest extends ApiTestCase
                 'content' => [
                     'id' => $movie->getId(),
                     'name' => MovieHelper::TEST_MOVIE_NAME,
-                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                    'genre' => MovieHelper::TEST_MOVIE_GENRE,
                     'created_at' => 'exists',
                     'updated_at' => 'exists',
                 ]
@@ -311,7 +311,7 @@ class MovieControllerTest extends ApiTestCase
             ],
             [
                 'name' => MovieHelper::TEST_MOVIE_NAME,
-                'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                'genre' => MovieHelper::TEST_MOVIE_GENRE,
             ]
         );
 
@@ -342,7 +342,7 @@ class MovieControllerTest extends ApiTestCase
             ],
             'case 2: no name' => [
                 'data' => [
-                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                    'genre' => MovieHelper::TEST_MOVIE_GENRE,
                 ],
             ],
             'case 3: no genre' => [
@@ -353,7 +353,7 @@ class MovieControllerTest extends ApiTestCase
             'case 4: too long name' => [
                 'data' => [
                     'name' => str_repeat('n', 256),
-                    'genre' => MovieHelper::TEST_PRODUCT_GENRE,
+                    'genre' => MovieHelper::TEST_MOVIE_GENRE,
                 ]
             ],
         ];

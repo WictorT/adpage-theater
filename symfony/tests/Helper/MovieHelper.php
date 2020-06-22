@@ -13,7 +13,7 @@ class MovieHelper
     const DEFAULT_PER_PAGE = 3;
     const DEFAULT_PAGE = 1;
     const TEST_MOVIE_NAME = 'Cyberpunk 2077';
-    const TEST_PRODUCT_GENRE = 'Action';
+    const TEST_MOVIE_GENRE = 'Action';
 
     /**
      * @var EntityManagerInterface
@@ -33,7 +33,7 @@ class MovieHelper
      * @param float $genre
      * @return Movie|null|object
      */
-    public function createMovie($name = self::TEST_MOVIE_NAME, $genre = self::TEST_PRODUCT_GENRE): Movie
+    public function createMovie($name = self::TEST_MOVIE_NAME, $genre = self::TEST_MOVIE_GENRE): Movie
     {
         $movie = $this->entityManager->getRepository(Movie::class)->findOneBy(['name' => $name]);
 

@@ -60,31 +60,31 @@ class MovieHandler extends BaseHandler
     }
 
     /**
-     * @param int $productId
+     * @param int $movieId
      *
      * @return Movie|null
      *@throws NotFoundHttpException
      *
      */
-    public function getById(int $productId): ?Movie
+    public function getById(int $movieId): ?Movie
     {
-        /** @var Movie $product */
-        $product = $this->getRepository()->find($productId);
-        if ($product === null) {
+        /** @var Movie $movie */
+        $movie = $this->getRepository()->find($movieId);
+        if ($movie === null) {
             throw new NotFoundHttpException();
         }
 
-        return $product;
+        return $movie;
     }
 
     /**
-     * @param BaseEntity|Movie $product
+     * @param BaseEntity|Movie $movie
      *
      * @return BaseDTO|MovieDTO
      */
-    public function getDto(BaseEntity $product): BaseDTO
+    public function getDto(BaseEntity $movie): BaseDTO
     {
-        return $this->transformer->transform($product);
+        return $this->transformer->transform($movie);
     }
 
     /**
@@ -136,52 +136,52 @@ class MovieHandler extends BaseHandler
     }
 
     /**
-     * @param BaseDTO|MovieDTO $productDto
+     * @param BaseDTO|MovieDTO $movieDto
      *
      * @return BaseDTO
      */
-    public function create(BaseDTO $productDto): BaseDTO
+    public function create(BaseDTO $movieDto): BaseDTO
     {
-        $product = $this->transformer->reverseTransform($productDto);
+        $movie = $this->transformer->reverseTransform($movieDto);
 
-        $validationErrors = $this->validator->validate($product);
+        $validationErrors = $this->validator->validate($movie);
         $this->handleValidationErrors($validationErrors);
 
-        $this->entityManager->persist($product);
+        $this->entityManager->persist($movie);
         $this->entityManager->flush();
-        $this->entityManager->refresh($product);
+        $this->entityManager->refresh($movie);
 
-        return $this->transformer->transform($product);
+        return $this->transformer->transform($movie);
     }
 
     /**
-     * @param BaseEntity $product
-     * @param BaseDTO $productDto
+     * @param BaseEntity $movie
+     * @param BaseDTO $movieDto
      *
      * @return BaseDTO
      */
-    public function update(BaseEntity $product, BaseDTO $productDto): BaseDTO
+    public function update(BaseEntity $movie, BaseDTO $movieDto): BaseDTO
     {
-        $product = $this->transformer->reverseTransform($productDto, $product);
+        $movie = $this->transformer->reverseTransform($movieDto, $movie);
 
-        $validationErrors = $this->validator->validate($product);
+        $validationErrors = $this->validator->validate($movie);
         $this->handleValidationErrors($validationErrors);
 
-        $this->entityManager->merge($product);
+        $this->entityManager->merge($movie);
         $this->entityManager->flush();
-        $this->entityManager->refresh($product);
+        $this->entityManager->refresh($movie);
 
-        return $this->transformer->transform($product);
+        return $this->transformer->transform($movie);
     }
 
     /**
-     * @param BaseEntity|Movie $product
+     * @param BaseEntity|Movie $movie
      *
      * @return void
      */
-    public function delete(BaseEntity $product): void
+    public function delete(BaseEntity $movie): void
     {
-        $this->entityManager->remove($product);
+        $this->entityManager->remove($movie);
         $this->entityManager->flush();
     }
 

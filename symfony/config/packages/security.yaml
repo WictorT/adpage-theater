@@ -14,7 +14,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        products-view:
+        movies-view:
             pattern:  ^/api/movies
             security: false
             methods: ["GET"]

@@ -85,43 +85,43 @@ class MovieController extends FOSRestController
     /**
      * @Rest\Get(path="/movies/{id}", name="app.movies.get", requirements={"id":"\d+"})
      *
-     * @param Movie $product
+     * @param Movie $movie
      *
      * @return View
      */
-    public function getAction(Movie $product): View
+    public function getAction(Movie $movie): View
     {
-        $productDto = $this->movieHandler->getDto($product);
+        $movieDto = $this->movieHandler->getDto($movie);
 
-        return View::create($productDto, Response::HTTP_OK);
+        return View::create($movieDto, Response::HTTP_OK);
     }
 
     /**
      * @Rest\Post(path="/movies", name="app.movies.create")
-     * @ParamConverter("productDTO", converter="fos_rest.request_body")
+     * @ParamConverter("movieDTO", converter="fos_rest.request_body")
      *
-     * @param BaseDTO|MovieDTO $productDTO
+     * @param BaseDTO|MovieDTO $movieDTO
      * @param ConstraintViolationListInterface $validationErrors
      *
      * @return View
      *@throws BadRequestHttpException
      *
      */
-    public function createAction(MovieDTO $productDTO, ConstraintViolationListInterface $validationErrors): View
+    public function createAction(MovieDTO $movieDTO, ConstraintViolationListInterface $validationErrors): View
     {
         $this->movieHandler->handleValidationErrors($validationErrors);
 
-        $productDTO = $this->movieHandler->create($productDTO);
+        $movieDTO = $this->movieHandler->create($movieDTO);
 
-        return View::create($productDTO, Response::HTTP_CREATED);
+        return View::create($movieDTO, Response::HTTP_CREATED);
     }
 
     /**
      * @Rest\Put(path="/movies/{id}", name="app.movies.update", requirements={"id":"\d+"})
-     * @ParamConverter("productDTO", converter="fos_rest.request_body")
+     * @ParamConverter("movieDTO", converter="fos_rest.request_body")
      *
-     * @param Movie $product
-     * @param BaseDTO|MovieDTO $productDTO
+     * @param Movie $movie
+     * @param BaseDTO|MovieDTO $movieDTO
      * @param ConstraintViolationListInterface $validationErrors
      *
      * @return View
@@ -129,27 +129,27 @@ class MovieController extends FOSRestController
      *
      */
     public function updateAction(
-        Movie $product,
-        MovieDTO $productDTO,
+        Movie $movie,
+        MovieDTO $movieDTO,
         ConstraintViolationListInterface $validationErrors
     ): View {
         $this->movieHandler->handleValidationErrors($validationErrors);
 
-        $productDTO = $this->movieHandler->update($product, $productDTO);
+        $movieDTO = $this->movieHandler->update($movie, $movieDTO);
 
-        return View::create($productDTO, Response::HTTP_OK);
+        return View::create($movieDTO, Response::HTTP_OK);
     }
 
     /**
      * @Rest\Delete(path="/movies/{id}", name="app.movies.delete", requirements={"id":"\d+"})
      *
-     * @param Movie $product
+     * @param Movie $movie
      *
      * @return View
      */
-    public function deleteAction(Movie $product): View
+    public function deleteAction(Movie $movie): View
     {
-        $this->movieHandler->delete($product);
+        $this->movieHandler->delete($movie);
 
         return View::create(null, Response::HTTP_NO_CONTENT);
     }
