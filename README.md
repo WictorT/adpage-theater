@@ -1,7 +1,7 @@
 <h1 align="center">
-  Randomly priced games
+  Theater API
 </h1>
-<p align="center">This is a gaming store API, which provides basic functionality for product management </p>
+<p align="center">This is a theater API, designed to serve a theater's ongoing movies. </p>
 
 ### Prerequisites
  - **Linux/OS X/Windows**
